@@ -1,5 +1,9 @@
 package cn.mcmod.tofucraft.tileentity;
 
+import java.util.List;
+
+import cn.mcmod.tofucraft.TofuConfig;
+import cn.mcmod.tofucraft.TofuMain;
 import cn.mcmod.tofucraft.block.BlockLoader;
 import cn.mcmod.tofucraft.block.BlockSaltFurnace;
 import cn.mcmod.tofucraft.inventory.ContainerSaltFurnace;
@@ -29,6 +33,9 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.datafix.DataFixer;
 import net.minecraft.util.datafix.FixTypes;
 import net.minecraft.util.datafix.walkers.ItemStackDataLists;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
@@ -38,8 +45,6 @@ import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-
-import java.util.List;
 
 public class TileEntitySaltFurnace extends TileEntityLockable implements ITickable, ISidedInventory, IFluidHandler {
     /*
@@ -57,7 +62,7 @@ public class TileEntitySaltFurnace extends TileEntityLockable implements ITickab
      * 4. Consume fuel, and start a work cycle.
      * 5. Dump items to where it should be.
      * */
-
+	
     private static final int[] SLOTS_TOP = new int[]{0, 2};
     private static final int[] SLOTS_SIDE = new int[]{0, 1, 2, 3};
     private static final int[] SLOTS_BOTTOM = new int[]{1, 3};
@@ -75,11 +80,12 @@ public class TileEntitySaltFurnace extends TileEntityLockable implements ITickab
     /**
      * The number of ticks that the furnace will keep burning
      */
-    private int furnaceBurnTime;
+    
+    private final IFurnaceBurnTime furnaceBurnTime=(TofuConfig.feToBurn>0)?(new EnergyStore(this)):(new NormalStore(this));
+    
     /**
      * The number of ticks that a fresh copy of the currently-burning item would keep the furnace burning for
      */
-    private int currentItemBurnTime = 0;
     private int cookTime = 0;
     private int totalCookTime;
     /**
@@ -104,15 +110,16 @@ public class TileEntitySaltFurnace extends TileEntityLockable implements ITickab
     public void update() {
 
         boolean wasBurning = isBurning();
-        if (isBurning()) furnaceBurnTime--;
+        if (isBurning()) {this.furnaceBurnTime.burnSpent();};
 
         int cauldron = this.getCauldronStatus();
         boolean isDirty = false;
         if (!world.isRemote) {
-            if (furnaceBurnTime == 0 && this.canBoil(cauldron)) {
+            if (this.furnaceBurnTime.burnIsRemain()&& this.canBoil(cauldron)) {
                 ItemStack fuel = furnaceItemStacks.get(0);
-                furnaceBurnTime = TileEntityFurnace.getItemBurnTime(fuel);
-                if (furnaceBurnTime > 0) {
+                int a=TileEntityFurnace.getItemBurnTime(fuel);
+                this.furnaceBurnTime.burnReset(a);
+                if (a > 0) {
                     isDirty = true;
                     fuel.shrink(1);
                     if (fuel.getCount() == 0) {
@@ -236,9 +243,9 @@ public class TileEntitySaltFurnace extends TileEntityLockable implements ITickab
     public int getField(int id) {
         switch (id) {
             case 0:
-                return this.furnaceBurnTime;
+                return this.furnaceBurnTime.burnGetCurrent();
             case 1:
-                return this.currentItemBurnTime;
+                return this.furnaceBurnTime.burnGetMax();
             case 2:
                 return this.cookTime;
             case 3:
@@ -252,10 +259,10 @@ public class TileEntitySaltFurnace extends TileEntityLockable implements ITickab
     public void setField(int id, int value) {
         switch (id) {
             case 0:
-                this.furnaceBurnTime = value;
+            	this.furnaceBurnTime.burnSetCurrent(value);
                 break;
             case 1:
-                this.currentItemBurnTime = value;
+                this.furnaceBurnTime.burnSetMax(value);
                 break;
             case 2:
                 this.cookTime = value;
@@ -328,14 +335,23 @@ public class TileEntitySaltFurnace extends TileEntityLockable implements ITickab
 
     @Override
     public void readFromNBT(NBTTagCompound par1NBTTagCompound) {
-        super.readFromNBT(par1NBTTagCompound);
+    	super.readFromNBT(par1NBTTagCompound);
         this.furnaceItemStacks = NonNullList.withSize(this.getSizeInventory(), ItemStack.EMPTY);
         ItemStackHelper.loadAllItems(par1NBTTagCompound, this.furnaceItemStacks);
-
-        this.furnaceBurnTime = par1NBTTagCompound.getShort("BurnTime");
         this.cookTime = par1NBTTagCompound.getShort("CookTime");
-        this.currentItemBurnTime = par1NBTTagCompound.getShort("ItemBurnTime");
-        ;
+        
+        try {
+        int i1=par1NBTTagCompound.getInteger("BurnTime");
+        int i2=par1NBTTagCompound.getInteger("ItemBurnTime");
+        this.furnaceBurnTime.nbtRead(i1, i2);
+        }catch(Exception e) {
+        	TofuMain.logger.catching(e);
+        	TofuMain.logger.warn("TofuSaltFurnace NBT error detect, reset burn time.");
+        	BlockPos a=this.getPos();
+        	TofuMain.logger.warn("Pos: w={}, x={}, y={}, z={}.",this.world.provider.getDimension(),a.getX(),a.getY(),a.getZ());
+        	this.furnaceBurnTime.nbtRead(0,0);
+        }
+        
         this.nigariTank.readFromNBT(par1NBTTagCompound.getCompoundTag("NigariTank"));
 
         if (par1NBTTagCompound.hasKey("CustomName")) {
@@ -346,9 +362,9 @@ public class TileEntitySaltFurnace extends TileEntityLockable implements ITickab
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound par1NBTTagCompound) {
         super.writeToNBT(par1NBTTagCompound);
-        par1NBTTagCompound.setShort("BurnTime", (short) this.furnaceBurnTime);
+        par1NBTTagCompound.setInteger("BurnTime", this.furnaceBurnTime.nbtWriteCurrent());
         par1NBTTagCompound.setShort("CookTime", (short) this.cookTime);
-        par1NBTTagCompound.setInteger("ItemBurnTime", this.currentItemBurnTime);
+        par1NBTTagCompound.setInteger("ItemBurnTime", this.furnaceBurnTime.nbtWriteMax());
 
         NBTTagCompound nigariTag = this.nigariTank.writeToNBT(new NBTTagCompound());
         par1NBTTagCompound.setTag("NigariTank", nigariTag);
@@ -392,11 +408,7 @@ public class TileEntitySaltFurnace extends TileEntityLockable implements ITickab
      */
     @SideOnly(Side.CLIENT)
     public int getBurnTimeRemainingScaled(int par1) {
-        if (this.currentItemBurnTime == 0) {
-            this.currentItemBurnTime = 200;
-        }
-
-        return this.furnaceBurnTime * par1 / this.currentItemBurnTime;
+        return this.furnaceBurnTime.burnGetProgressBounded(par1);
     }
 
     @SideOnly(Side.CLIENT)
@@ -408,7 +420,7 @@ public class TileEntitySaltFurnace extends TileEntityLockable implements ITickab
      * Furnace isBurning
      */
     public boolean isBurning() {
-        return this.furnaceBurnTime > 0;
+        return this.furnaceBurnTime.burnIsRemain();
     }
 
     /**
@@ -538,13 +550,20 @@ public class TileEntitySaltFurnace extends TileEntityLockable implements ITickab
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getCapability(net.minecraftforge.common.capabilities.Capability<T> capability, net.minecraft.util.EnumFacing facing) {
-        if (facing != null && capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
-            if (facing == EnumFacing.DOWN)
-                return (T) handlerBottom;
-            else if (facing == EnumFacing.UP)
-                return (T) handlerTop;
-            else
-                return (T) handlerSide;
+        if(capability==CapabilityEnergy.ENERGY&&TofuConfig.feToBurn>0) {
+        	return (T) this.furnaceBurnTime;
+        }
+    	
+    	if (facing != null && capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            switch(facing) {
+			case DOWN:
+				return (T) handlerBottom;
+			case UP:
+				return (T) handlerTop;
+			default:
+				return (T) handlerSide;
+            }
+        }
         return super.getCapability(capability, facing);
     }
 
@@ -640,6 +659,225 @@ public class TileEntitySaltFurnace extends TileEntityLockable implements ITickab
             }
         }
 
+    }
+    
+    public static interface IFurnaceBurnTime{
+    	public int nbtWriteCurrent();
+    	public void burnSetCurrent(int value);
+		public int burnGetProgressBounded(int bound);
+		public int nbtWriteMax();
+    	public void nbtRead(int current,int max);
+    	public void burnReset(int value);
+    	public int burnGetCurrent();
+    	public int burnGetMax();
+    	public void burnSetMax(int value);
+    	public boolean burnIsRemain();
+    	public boolean burnSpent();
+    }
+    
+    public static class NormalStore implements IFurnaceBurnTime{
+
+		private int burnRemain=0;
+		private int burnMax=0;
+
+		public NormalStore(TileEntitySaltFurnace tileEntitySaltFurnace) {
+		}
+    	
+		@Override
+		public void burnReset(int a) {
+			this.burnRemain=a;
+			this.burnMax=a;
+		}
+
+		@Override
+		public int burnGetCurrent() {
+			return this.burnRemain;
+		}
+
+		@Override
+		public boolean burnIsRemain() {
+			return this.burnRemain>0;
+		}
+
+		@Override
+		public boolean burnSpent() {
+			if(this.burnRemain>0) {
+				--this.burnRemain;
+				if(this.burnRemain==0) {
+					this.burnMax=0;
+				}
+				return true;
+			}else {
+				return false;
+			}
+		}
+
+		@Override
+		public int burnGetMax() {
+			return this.burnMax;
+		}
+
+		@Override
+		public int nbtWriteCurrent() {
+			return this.burnRemain;
+		}
+
+		@Override
+		public int burnGetProgressBounded(int bound) {
+			if(this.burnRemain==0) {
+				return 0;
+			}
+			if(this.burnMax==0) {
+				return bound;
+			}
+			return this.burnRemain*bound/this.burnMax;
+		}
+
+		@Override
+		public int nbtWriteMax() {
+			return this.burnMax;
+		}
+
+		@Override
+		public void nbtRead(int current, int max) {
+			this.burnRemain=current;
+			this.burnMax=max;
+		}
+
+		@Override
+		public void burnSetMax(int value) {
+			this.burnMax=value;
+			if(this.burnRemain>this.burnMax) {
+				this.burnRemain=this.burnMax;
+			}
+		}
+
+		@Override
+		public void burnSetCurrent(int value) {
+			this.burnRemain=value;
+		}
+    	
+    }
+    
+    public static class EnergyStore implements IEnergyStorage,IFurnaceBurnTime{
+    	
+  
+    	private int store=0;
+    	private int capacity=0;
+    	
+    	/* max: Short.MAX_VALUE */
+    	//public static final int batteryChunk=Math.max(20000,Short.MAX_VALUE);
+
+		public EnergyStore(TileEntitySaltFurnace tileEntitySaltFurnace) {
+		}
+
+		@Override
+		public boolean canExtract() {
+			return false;
+		}
+
+		@Override
+		public boolean canReceive() {
+			return TofuConfig.feToBurn>0;
+		}
+
+		@Override
+		public int extractEnergy(int arg0, boolean arg1) {
+			return 0;
+		}
+
+		@Override
+		public int getEnergyStored() {
+			return this.store;
+		}
+
+		@Override
+		public int getMaxEnergyStored() {
+			return this.capacity;
+		}
+
+		@Override
+		public int receiveEnergy(final int arg0, boolean arg1) {
+			int ijt=0;
+			if(this.capacity>0&&this.store<this.capacity) {
+				ijt=Math.min(arg0,this.capacity-this.store);
+			}
+			if(!arg1) {
+				this.store+=ijt;
+			}
+			return ijt;
+		}
+
+		@Override
+		public int nbtWriteCurrent() {
+			return this.store;
+		}
+
+		@Override
+		public int burnGetProgressBounded(int bound) {
+			if(this.store==0) {
+				return 0;
+			}
+			if(this.capacity==0) {
+				return bound;
+			}
+			return this.store*bound/this.capacity;
+		}
+
+		@Override
+		public int nbtWriteMax() {
+			return this.capacity;
+		}
+
+		@Override
+		public void nbtRead(int current, int max) {
+			this.store=current;
+			this.capacity=max;
+		}
+
+		@Override
+		public void burnReset(int value) {
+			this.store=this.capacity=value*TofuConfig.feToBurn;
+		}
+
+		@Override
+		public int burnGetCurrent() {
+			return this.store/TofuConfig.feToBurn;
+		}
+
+		@Override
+		public int burnGetMax() {
+			return this.capacity/TofuConfig.feToBurn;
+		}
+
+		@Override
+		public void burnSetMax(int value) {
+			this.capacity=value*TofuConfig.feToBurn;
+		}
+
+		@Override
+		public boolean burnIsRemain() {
+			return this.store>=TofuConfig.feToBurn;
+		}
+
+		@Override
+		public boolean burnSpent() {
+			if(this.store>=TofuConfig.feToBurn) {
+				this.store-=TofuConfig.feToBurn;
+				if(this.store<TofuConfig.feToBurn) {
+					this.capacity=0;
+				}
+				return true;
+			}else {
+				return false;
+			}
+		}
+
+		@Override
+		public void burnSetCurrent(int value) {
+			this.store=value*TofuConfig.feToBurn;
+		}
+    	
     }
 
 }

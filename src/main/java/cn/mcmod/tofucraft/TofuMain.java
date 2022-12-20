@@ -1,5 +1,7 @@
 package cn.mcmod.tofucraft;
 
+import org.apache.logging.log4j.Logger;
+
 import cn.mcmod.tofucraft.compat.TofuCompat;
 import cn.mcmod.tofucraft.entity.TofuEntityRegister;
 import cn.mcmod.tofucraft.entity.TofuVillages;
@@ -37,9 +39,8 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
-import org.apache.logging.log4j.Logger;
 //@[1.3.0,)
-@Mod(modid = TofuMain.MODID, name = TofuMain.NAME, version = TofuMain.VERSION, dependencies = "before:tconstruct;required-after:mm_lib@[1.5.0,);")
+@Mod(modid = TofuMain.MODID, name = TofuMain.NAME, version = TofuMain.VERSION, dependencies = "before:tconstruct;required-after:mm_lib@[2.0.0,);")
 public class TofuMain {
     public static final String MODID = "tofucraft";
     public static final String NAME = "TofuCraftReload";
@@ -83,7 +84,7 @@ public class TofuMain {
         TofuCompat.preInit();
 
         GameRegistry.registerWorldGenerator(new TofuOreGenerator(), 0);
-
+        
         MapGenStructureIO.registerStructure(MapGenTofuVillage.Start.class,"TofuVillage");
         StructureTofuVillagePieces.registerVillagePieces();
         MapGenStructureIO.registerStructure(StructureTofuMineshaftStart.class,"TofuMineshaft");

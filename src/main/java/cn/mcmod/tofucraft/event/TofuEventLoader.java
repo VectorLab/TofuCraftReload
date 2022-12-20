@@ -1,5 +1,6 @@
 package cn.mcmod.tofucraft.event;
 
+import cn.mcmod.tofucraft.TofuConfig;
 import cn.mcmod.tofucraft.TofuMain;
 import cn.mcmod.tofucraft.block.BlockLoader;
 import cn.mcmod.tofucraft.block.plants.BlockSoybeanNether;
@@ -20,8 +21,10 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.entity.living.PotionEvent.PotionAddedEvent;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -160,15 +163,17 @@ public class TofuEventLoader {
     @SubscribeEvent
     public void decorateBiome(DecorateBiomeEvent.Post event)
     {
+    	if(!TofuConfig.genNether) {return;}
         World worldObj = event.getWorld();
         Random rand = event.getRand();
         @SuppressWarnings("deprecation")
 		BlockPos pos = event.getPos();
-        // Hellsoybeans
-        if (rand.nextInt(600) < Math.min((Math.abs(pos.getX()) + Math.abs(pos.getZ())) / 2, 400) - 100)
+        //if (Biome.getIdForBiome(worldObj.getBiome(pos)) == Biome.getIdForBiome(Biomes.HELL))
+        if(DimensionManager.getWorld(DimensionType.NETHER.getId()).equals(worldObj))
         {
-            if (Biome.getIdForBiome(worldObj.getBiome(pos)) == Biome.getIdForBiome(Biomes.HELL))
-            {
+        	if (rand.nextInt(600) < Math.min((Math.abs(pos.getX()) + Math.abs(pos.getZ())) / 2, 400) - 100)
+        		{
+
                 int k = pos.getX();
                 int l = pos.getZ();
                 BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();

@@ -1,5 +1,6 @@
 package cn.mcmod.tofucraft.block;
 
+import cn.mcmod.tofucraft.TofuConfig;
 import cn.mcmod.tofucraft.TofuMain;
 import cn.mcmod.tofucraft.client.TofuParticleType;
 import cn.mcmod.tofucraft.world.TofuTeleporter;
@@ -388,7 +389,7 @@ public class BlockTofuPortal extends Block {
     @Override
     public void onEntityCollidedWithBlock(World worldIn, BlockPos pos, IBlockState state, Entity entityIn) {
 
-        if (!entityIn.isRiding() && !entityIn.isBeingRidden() && entityIn.isNonBoss()) {
+        if (TofuConfig.portalActive&&!entityIn.isRiding() && !entityIn.isBeingRidden() && entityIn.isNonBoss()) {
             MinecraftServer server = worldIn.getMinecraftServer();
             if (server != null && entityIn.timeUntilPortal <= 0) {
                 PlayerList playerList = server.getPlayerList();

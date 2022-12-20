@@ -1,5 +1,6 @@
 package cn.mcmod.tofucraft.entity;
 
+import cn.mcmod.tofucraft.TofuConfig;
 import cn.mcmod.tofucraft.TofuMain;
 import cn.mcmod.tofucraft.util.TofuLootTables;
 import net.minecraft.block.state.IBlockState;
@@ -8,6 +9,7 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
@@ -29,7 +31,6 @@ public class EntityTofuSlime extends EntitySlime {
     public boolean getCanSpawnHere() {
 
         if (this.world.getDifficulty() != EnumDifficulty.PEACEFUL) {
-            int lightValue = this.world.getLightFromNeighbors(new BlockPos(MathHelper.floor(this.posX), MathHelper.floor(this.posY), MathHelper.floor(this.posZ)));
 
             if (this.dimension == TofuMain.TOFU_DIMENSION.getId() && this.rand.nextInt((int) (this.world.getLightBrightness(getPosition()) * 10 + 30)) == 0
                     && this.world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox().expand(48.0D, 20.0D, 48.0D)).size() == 0) {
@@ -38,10 +39,13 @@ public class EntityTofuSlime extends EntitySlime {
                 return this.world.getLightFor(EnumSkyBlock.BLOCK, getPosition()) < 2 + this.rand.nextInt(6) && this.baseGetCanSpawnHere();
             }
 
-            if (this.dimension == 0 && this.rand.nextInt(10) == 0
+            if (TofuConfig.interactOverworld 
+            		&& this.posY < 40.0D
+            		&& this.dimension == DimensionType.OVERWORLD.getId()
+            		&& this.rand.nextBoolean()
                     && isSpawnChunk(this.world, this.posX, this.posZ)
-                    && this.posY < 40.0D
-                    && lightValue <= this.rand.nextInt(10))
+                    && (this.world.getLightFromNeighbors(new BlockPos(MathHelper.floor(this.posX), MathHelper.floor(this.posY), MathHelper.floor(this.posZ))))
+                    <= this.rand.nextInt(10))
                 return this.baseGetCanSpawnHere();
         }
         return false;
@@ -50,7 +54,7 @@ public class EntityTofuSlime extends EntitySlime {
     public static boolean isSpawnChunk(World world, double x, double z) {
         BlockPos blockpos = new BlockPos(MathHelper.floor(x), 0, MathHelper.floor(z));
         Chunk var1 = world.getChunkFromBlockCoords(blockpos);
-        return var1.getRandomWithSeed(987234911L).nextInt(8) == 0;
+        return var1.getRandomWithSeed(TofuConfig.globalSeed).nextInt(8) == 0;
     }
     
     /**

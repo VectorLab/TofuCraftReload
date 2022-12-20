@@ -1,5 +1,6 @@
 package cn.mcmod.tofucraft.world.gen.future;
 
+import cn.mcmod.tofucraft.TofuConfig;
 import cn.mcmod.tofucraft.block.BlockLoader;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -14,7 +15,7 @@ import java.util.Random;
 public class TofuOreGenerator implements IWorldGenerator {
     @Override
     public void generate(Random random, int chunkX, int chunkZ, World world, IChunkGenerator chunkGenerator, IChunkProvider chunkProvider) {
-        if (world.provider instanceof WorldProviderSurface) {
+        if (TofuConfig.genOverworld&&world.provider instanceof WorldProviderSurface) {
             this.generateOre(world, random, chunkX << 4, chunkZ << 4);
 
         }

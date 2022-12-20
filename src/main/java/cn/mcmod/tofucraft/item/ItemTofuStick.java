@@ -1,5 +1,6 @@
 package cn.mcmod.tofucraft.item;
 
+import cn.mcmod.tofucraft.TofuConfig;
 import cn.mcmod.tofucraft.TofuMain;
 import cn.mcmod.tofucraft.block.BlockLoader;
 import net.minecraft.entity.player.EntityPlayer;
@@ -21,7 +22,8 @@ public class ItemTofuStick extends Item {
 
     @Override
     public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        ItemStack itemstack = player.getHeldItem(hand);
+        if(TofuConfig.interactOverworld) {
+    	ItemStack itemstack = player.getHeldItem(hand);
 
         if (worldIn.getBlockState(pos).getBlock() == BlockLoader.GRILD) {
             //動作が成功すると消費する
@@ -31,6 +33,7 @@ public class ItemTofuStick extends Item {
                     itemstack.shrink(1);
                 }
             }
+        }
         }
         return super.onItemUse(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
     }
