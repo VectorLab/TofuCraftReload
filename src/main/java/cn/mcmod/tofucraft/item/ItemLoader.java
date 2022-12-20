@@ -12,7 +12,7 @@ import cn.mcmod.tofucraft.material.TofuToolMaterial;
 import cn.mcmod.tofucraft.material.TofuType;
 import cn.mcmod_mmf.mmlib.item.ItemBase;
 import cn.mcmod_mmf.mmlib.item.ItemMetaDurability;
-import cn.mcmod_mmf.mmlib.item.food.FoodInfo;
+import cn.mcmod_mmf.mmlib.item.info.FoodInfo;
 import cn.mcmod_mmf.mmlib.item.food.ItemDrinkBase;
 import cn.mcmod_mmf.mmlib.item.food.ItemFoodBase;
 import cn.mcmod_mmf.mmlib.item.food.ItemFoodContain;
