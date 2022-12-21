@@ -1,6 +1,7 @@
 package cn.mcmod.tofucraft.block;
 
-import cn.mcmod.tofucraft.CommonProxy;
+import java.util.Random;
+
 import cn.mcmod.tofucraft.TofuMain;
 import cn.mcmod.tofucraft.gui.TofuGuiHandler;
 import cn.mcmod.tofucraft.tileentity.TileEntitySaltFurnace;
@@ -19,13 +20,17 @@ import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.*;
+import net.minecraft.util.EnumBlockRenderType;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.Mirror;
+import net.minecraft.util.Rotation;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-
-import java.util.Random;
 
 public class BlockSaltFurnace extends BlockContainer {
     public static final PropertyDirection FACING = BlockHorizontal.FACING;
@@ -41,8 +46,6 @@ public class BlockSaltFurnace extends BlockContainer {
         this.setHardness(3.5F);
         if(isBurning){
             this.setLightLevel(0.85F);
-        }else {
-            this.setCreativeTab(CommonProxy.tab);
         }
     }
 
@@ -145,11 +148,9 @@ public class BlockSaltFurnace extends BlockContainer {
         if (active)
         {
             worldIn.setBlockState(pos, BlockLoader.SALTFURNACE_LIT.getDefaultState().withProperty(FACING, iblockstate.getValue(FACING)), 3);
-            worldIn.setBlockState(pos, BlockLoader.SALTFURNACE_LIT.getDefaultState().withProperty(FACING, iblockstate.getValue(FACING)), 3);
         }
         else
         {
-            worldIn.setBlockState(pos, BlockLoader.SALTFURNACE.getDefaultState().withProperty(FACING, iblockstate.getValue(FACING)), 3);
             worldIn.setBlockState(pos, BlockLoader.SALTFURNACE.getDefaultState().withProperty(FACING, iblockstate.getValue(FACING)), 3);
         }
 
@@ -191,7 +192,9 @@ public class BlockSaltFurnace extends BlockContainer {
     @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state)
     {
-        if (!keepInventory)
+        if (keepInventory){
+        	return;
+        }
         {
             TileEntity tileentity = worldIn.getTileEntity(pos);
 

@@ -194,7 +194,8 @@ public class BlockLoader {
         register(TOFUSTATION, new ItemBlock(TOFUSTATION), "tofuworkstation");
 
         register(SALTFURNACE, new ItemBlock(SALTFURNACE), "saltfurnace");
-        register(SALTFURNACE_LIT, new ItemBlock(SALTFURNACE_LIT), "saltfurnace_lit");
+        //register(SALTFURNACE_LIT, new ItemBlock(SALTFURNACE_LIT), "saltfurnace_lit");
+        registerNoItem(SALTFURNACE_LIT, "saltfurnace_lit");
         register(SALTPAN, new ItemBlock(SALTPAN), "blocksaltpan");
         register(KINUTOFU, new ItemBlock(KINUTOFU), "blocktofukinu");
         register(MOMENTOFU, new ItemBlock(MOMENTOFU), "blocktofumomen");

@@ -34,6 +34,7 @@ import net.minecraft.util.datafix.DataFixer;
 import net.minecraft.util.datafix.FixTypes;
 import net.minecraft.util.datafix.walkers.ItemStackDataLists;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fluids.Fluid;
@@ -63,7 +64,23 @@ public class TileEntitySaltFurnace extends TileEntityLockable implements ITickab
      * 5. Dump items to where it should be.
      * */
 	
-    private static final int[] SLOTS_TOP = new int[]{0, 2};
+	private static boolean shouldRefresh_isValidBlock(IBlockState j) {
+		Block k=j.getBlock();
+		return BlockLoader.SALTFURNACE_LIT==k||BlockLoader.SALTFURNACE==k;
+	}
+	
+    @Override
+	public boolean shouldRefresh(World p_shouldRefresh_1_, BlockPos p_shouldRefresh_2_, IBlockState p_shouldRefresh_3_,
+			IBlockState p_shouldRefresh_4_) {
+    	if(shouldRefresh_isValidBlock(p_shouldRefresh_3_)&&shouldRefresh_isValidBlock(p_shouldRefresh_4_)) {
+    		return false;
+    	}
+    	
+		// TODO Auto-generated method stub
+		return super.shouldRefresh(p_shouldRefresh_1_, p_shouldRefresh_2_, p_shouldRefresh_3_, p_shouldRefresh_4_);
+	}
+
+	private static final int[] SLOTS_TOP = new int[]{0, 2};
     private static final int[] SLOTS_SIDE = new int[]{0, 1, 2, 3};
     private static final int[] SLOTS_BOTTOM = new int[]{1, 3};
 //    private static final FluidStack nigari = new FluidStack(BlockLoader.NIGARI_FLUID, 10);
@@ -115,7 +132,7 @@ public class TileEntitySaltFurnace extends TileEntityLockable implements ITickab
         int cauldron = this.getCauldronStatus();
         boolean isDirty = false;
         if (!world.isRemote) {
-            if (this.furnaceBurnTime.burnIsRemain()&& this.canBoil(cauldron)) {
+            if ((!this.furnaceBurnTime.burnIsRemain())&&this.canBoil(cauldron)) {
                 ItemStack fuel = furnaceItemStacks.get(0);
                 int a=TileEntityFurnace.getItemBurnTime(fuel);
                 this.furnaceBurnTime.burnReset(a);
