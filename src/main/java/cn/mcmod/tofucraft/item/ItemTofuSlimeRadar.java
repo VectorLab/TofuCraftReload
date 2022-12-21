@@ -1,7 +1,7 @@
 package cn.mcmod.tofucraft.item;
 
 import cn.mcmod.tofucraft.TofuMain;
-import cn.mcmod.tofucraft.entity.EntityTofuSlime;
+import cn.mcmod.tofucraft.util.TofuSlimeSpawnChunk;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
@@ -26,7 +26,7 @@ public class ItemTofuSlimeRadar extends Item {
 	        {
 	            if (!worldIn.isRemote)
 	            {
-	                boolean isSpawnChunk = playerIn.dimension == TofuMain.TOFU_DIMENSION.getId() || EntityTofuSlime.isSpawnChunk(playerIn.world, playerIn.posX, playerIn.posZ);
+	                boolean isSpawnChunk = playerIn.dimension == TofuMain.TOFU_DIMENSION.getId() || TofuSlimeSpawnChunk.isSpawnChunk(playerIn.world, playerIn.posX, playerIn.posZ);
 	            
 	                if(isSpawnChunk) playerIn.sendMessage(new TextComponentTranslation("tofucraft.radar.result.success", new Object()));
 	                else playerIn.sendMessage(new TextComponentTranslation("tofucraft.radar.result.failed", new Object()));

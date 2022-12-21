@@ -1,8 +1,11 @@
 package cn.mcmod.tofucraft.entity;
 
+import javax.annotation.Nullable;
+
 import cn.mcmod.tofucraft.TofuConfig;
 import cn.mcmod.tofucraft.TofuMain;
 import cn.mcmod.tofucraft.util.TofuLootTables;
+import cn.mcmod.tofucraft.util.TofuSlimeSpawnChunk;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.monster.EntitySlime;
 import net.minecraft.util.EnumParticleTypes;
@@ -13,10 +16,7 @@ import net.minecraft.world.DimensionType;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.storage.loot.LootTableList;
-
-import javax.annotation.Nullable;
 
 public class EntityTofuSlime extends EntitySlime {
     public EntityTofuSlime(World worldIn) {
@@ -43,18 +43,12 @@ public class EntityTofuSlime extends EntitySlime {
             		&& this.posY < 40.0D
             		&& this.dimension == DimensionType.OVERWORLD.getId()
             		&& this.rand.nextBoolean()
-                    && isSpawnChunk(this.world, this.posX, this.posZ)
+                    && TofuSlimeSpawnChunk.isSpawnChunk(this.world, this.posX, this.posZ)
                     && (this.world.getLightFromNeighbors(new BlockPos(MathHelper.floor(this.posX), MathHelper.floor(this.posY), MathHelper.floor(this.posZ))))
                     <= this.rand.nextInt(10))
                 return this.baseGetCanSpawnHere();
         }
         return false;
-    }
-
-    public static boolean isSpawnChunk(World world, double x, double z) {
-        BlockPos blockpos = new BlockPos(MathHelper.floor(x), 0, MathHelper.floor(z));
-        Chunk var1 = world.getChunkFromBlockCoords(blockpos);
-        return var1.getRandomWithSeed(TofuConfig.globalSeed).nextInt(8) == 0;
     }
     
     /**

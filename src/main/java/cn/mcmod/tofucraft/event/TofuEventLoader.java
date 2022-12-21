@@ -1,5 +1,8 @@
 package cn.mcmod.tofucraft.event;
 
+import java.lang.reflect.Field;
+import java.util.Random;
+
 import cn.mcmod.tofucraft.TofuConfig;
 import cn.mcmod.tofucraft.TofuMain;
 import cn.mcmod.tofucraft.block.BlockLoader;
@@ -12,7 +15,6 @@ import net.minecraft.block.BlockBush;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Biomes;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
@@ -23,8 +25,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
-import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.entity.living.PotionEvent.PotionAddedEvent;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -32,9 +32,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-
-import java.lang.reflect.Field;
-import java.util.Random;
 
 public class TofuEventLoader {
     /**
@@ -169,7 +166,7 @@ public class TofuEventLoader {
         @SuppressWarnings("deprecation")
 		BlockPos pos = event.getPos();
         //if (Biome.getIdForBiome(worldObj.getBiome(pos)) == Biome.getIdForBiome(Biomes.HELL))
-        if(DimensionManager.getWorld(DimensionType.NETHER.getId()).equals(worldObj))
+        if(DimensionType.NETHER.equals(worldObj.provider.getDimensionType()))
         {
         	if (rand.nextInt(600) < Math.min((Math.abs(pos.getX()) + Math.abs(pos.getZ())) / 2, 400) - 100)
         		{

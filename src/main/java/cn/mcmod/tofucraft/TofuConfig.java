@@ -1,5 +1,6 @@
 package cn.mcmod.tofucraft;
 
+import cn.mcmod.tofucraft.util.TofuSlimeSpawnChunk;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
@@ -33,7 +34,7 @@ public class TofuConfig {
 
     @Config.LangKey(config + "global_seed")
     @Config.Comment("Seed for tofu slime chunk.")
-    public static long globalSeed = 987234911L;
+    public static String globalSeed = "987234911";
     
     @Config.LangKey(config + "fe_to_burn")
     @Config.RequiresWorldRestart
@@ -45,5 +46,6 @@ public class TofuConfig {
         if (event.getModID().equals(TofuMain.MODID)) {
             ConfigManager.sync(TofuMain.MODID, Config.Type.INSTANCE);
         }
+        TofuSlimeSpawnChunk.updateSeed(globalSeed);
     }
 }

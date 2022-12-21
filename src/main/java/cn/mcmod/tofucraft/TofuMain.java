@@ -6,6 +6,7 @@ import cn.mcmod.tofucraft.compat.TofuCompat;
 import cn.mcmod.tofucraft.entity.TofuEntityRegister;
 import cn.mcmod.tofucraft.entity.TofuVillages;
 import cn.mcmod.tofucraft.gui.TofuGuiHandler;
+import cn.mcmod.tofucraft.util.TofuSlimeSpawnChunk;
 import cn.mcmod.tofucraft.world.WorldProviderTofu;
 import cn.mcmod.tofucraft.world.biome.TofuBiomes;
 import cn.mcmod.tofucraft.world.gen.future.TofuOreGenerator;
@@ -109,6 +110,7 @@ public class TofuMain {
         DimensionManager.registerDimension(TofuConfig.dimensionID, TOFU_DIMENSION);
 
         TofuVillages.register();
+        TofuSlimeSpawnChunk.loadFromSettings();
     }
 
     @EventHandler
