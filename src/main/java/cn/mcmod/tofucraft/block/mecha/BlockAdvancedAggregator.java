@@ -83,11 +83,9 @@ public class BlockAdvancedAggregator extends Block {
         if (active)
         {
             worldIn.setBlockState(pos, BlockLoader.TFAdvancedAGGREGATOR_LIT.getDefaultState().withProperty(FACING, iblockstate.getValue(FACING)), 3);
-            worldIn.setBlockState(pos, BlockLoader.TFAdvancedAGGREGATOR_LIT.getDefaultState().withProperty(FACING, iblockstate.getValue(FACING)), 3);
         }
         else
         {
-            worldIn.setBlockState(pos, BlockLoader.TFAdvancedAGGREGATOR.getDefaultState().withProperty(FACING, iblockstate.getValue(FACING)), 3);
             worldIn.setBlockState(pos, BlockLoader.TFAdvancedAGGREGATOR.getDefaultState().withProperty(FACING, iblockstate.getValue(FACING)), 3);
         }
 
@@ -114,7 +112,9 @@ public class BlockAdvancedAggregator extends Block {
     @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state)
     {
-        if (!keepInventory)
+        if (keepInventory){
+        	return;
+        }
         {
             TileEntity tileentity = worldIn.getTileEntity(pos);
 

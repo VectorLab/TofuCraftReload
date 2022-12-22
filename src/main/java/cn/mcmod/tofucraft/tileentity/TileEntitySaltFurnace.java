@@ -35,6 +35,7 @@ import net.minecraft.util.datafix.FixTypes;
 import net.minecraft.util.datafix.walkers.ItemStackDataLists;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fluids.Fluid;
@@ -75,8 +76,6 @@ public class TileEntitySaltFurnace extends TileEntityLockable implements ITickab
     	if(shouldRefresh_isValidBlock(p_shouldRefresh_3_)&&shouldRefresh_isValidBlock(p_shouldRefresh_4_)) {
     		return false;
     	}
-    	
-		// TODO Auto-generated method stub
 		return super.shouldRefresh(p_shouldRefresh_1_, p_shouldRefresh_2_, p_shouldRefresh_3_, p_shouldRefresh_4_);
 	}
 
@@ -560,13 +559,17 @@ public class TileEntitySaltFurnace extends TileEntityLockable implements ITickab
             furnaceItemStacks.set(3, output);
         }
 
-
-
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <T> T getCapability(net.minecraftforge.common.capabilities.Capability<T> capability, net.minecraft.util.EnumFacing facing) {
+	public boolean hasCapability(Capability<?> p_hasCapability_1_, EnumFacing p_hasCapability_2_) {
+    	if(CapabilityEnergy.ENERGY==p_hasCapability_1_) {return true;}
+		return super.hasCapability(p_hasCapability_1_, p_hasCapability_2_);
+	}
+
+	@SuppressWarnings("unchecked")
+    @Override
+    public <T> T getCapability(Capability<T> capability, net.minecraft.util.EnumFacing facing) {
         if(capability==CapabilityEnergy.ENERGY&&TofuConfig.feToBurn>0) {
         	return (T) this.furnaceBurnTime;
         }

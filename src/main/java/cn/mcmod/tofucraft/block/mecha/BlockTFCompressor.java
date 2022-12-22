@@ -91,11 +91,9 @@ public class BlockTFCompressor extends Block {
         if (active)
         {
             worldIn.setBlockState(pos, BlockLoader.TFCOMPRESSOR_LIT.getDefaultState().withProperty(FACING, iblockstate.getValue(FACING)), 3);
-            worldIn.setBlockState(pos, BlockLoader.TFCOMPRESSOR_LIT.getDefaultState().withProperty(FACING, iblockstate.getValue(FACING)), 3);
         }
         else
         {
-            worldIn.setBlockState(pos, BlockLoader.TFCOMPRESSOR.getDefaultState().withProperty(FACING, iblockstate.getValue(FACING)), 3);
             worldIn.setBlockState(pos, BlockLoader.TFCOMPRESSOR.getDefaultState().withProperty(FACING, iblockstate.getValue(FACING)), 3);
         }
 
@@ -122,7 +120,9 @@ public class BlockTFCompressor extends Block {
     @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state)
     {
-        if (!keepInventory)
+        if (keepInventory){
+        	return;
+        }
         {
             TileEntity tileentity = worldIn.getTileEntity(pos);
 
